@@ -18,29 +18,38 @@ You'll create a simple app and then build it using Gradle.
  - {jdk}[JDK 6] or later
 
 
-include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/how_to_complete_this_guide.adoc[]
-
-
 [[scratch]]
 == Set up the project
 
 First you set up a Java project for Gradle to build. To keep the focus on Gradle, make the project as simple as possible for now.
 
-include::https://raw.githubusercontent.com/spring-guides/getting-started-macros/master/create_directory_structure_hello.adoc[]
-
-
 Within the `src/main/java/hello` directory, you can create any Java classes you want. For simplicity's sake and for consistency with the rest of this guide, Spring recommends that you create two classes: `HelloWorld.java` and `Greeter.java`.
 
 `src/main/java/hello/HelloWorld.java`
-[source,java]
+
+[source, java]
 ----
-include::initial/src/main/java/hello/HelloWorld.java[]
+package hello;
+
+public class HelloWorld {
+  public static void main(String[] args) {
+    Greeter greeter = new Greeter();
+    System.out.println(greeter.sayHello());
+  }
+}
 ----
 
 `src/main/java/hello/Greeter.java`
-[source,java]
+
+[source, java]
 ----
-include::initial/src/main/java/hello/Greeter.java[]
+package hello;
+
+public class Greeter {
+  public String sayHello() {
+    return "Hello world!";
+  }
+}
 ----
 
 
@@ -127,7 +136,7 @@ Starting simple, create a very basic `build.gradle` file in the <project folder>
 
 [source,groovy]
 ----
-include::initial/build.gradle[]
+apply plugin: 'java'
 ----
 
 This single line in the build configuration brings a significant amount of power. Run **gradle tasks** again, and you see new tasks added to the list, including tasks for building the project, creating JavaDoc, and running tests.
@@ -186,18 +195,26 @@ If you ran `gradle build` to build the project now, the build would fail because
 
 For starters, you need to add a source for 3rd party libraries.
 
-[source,groovy]
+[source, java]
 ----
-include::complete/build.gradle[tag=repositories]
+repositories {
+    mavenCentral()
+}
 ----
 
 The `repositories` block indicates that the build should resolve its dependencies from the Maven Central repository. Gradle leans heavily on many conventions and facilities established by the Maven build tool, including the option of using Maven Central as a source of library dependencies.
 
 Now that we're ready for 3rd party libraries, let's declare some.
 
-[source,groovy]
+[source, java]
 ----
-include::complete/build.gradle[tag=dependencies]
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "joda-time:joda-time:2.2"
+    testCompile "junit:junit:4.12"
+}
 ----
 
 With the `dependencies` block, you declare a single dependency for Joda Time. Specifically, you're asking for (reading right to left) version 2.2 of the joda-time library, in the joda-time group.
@@ -209,9 +226,12 @@ Another thing to note about this dependency is that it is a `compile` dependency
 
 Finally, let's specify the name for our JAR artifact.
 
-[source,groovy]
+[source, java]
 ----
-include::complete/build.gradle[tag=jar]
+jar {
+    baseName = 'gs-gradle'
+    version =  '0.1.0'
+}
 ----
 
 The `jar` block specifies how the JAR file will be named. In this case, it will render `gs-gradle-0.1.0.jar`.
@@ -277,6 +297,7 @@ The class files are bundled up. It's important to note, that even though you dec
 
 To make this code runnable, we can use gradle's `application` plugin. Add this to your `build.gradle` file.
 
+[source, java]
 ----
 apply plugin: 'application'
 
@@ -306,9 +327,40 @@ to make a choice. But for now, this should be enough to get started using gradle
 To wrap things up for this guide, here is the completed `build.gradle` file:
 
 `build.gradle`
-[source,gradle]
+
+[source, java]
 ----
-include::complete/build.gradle[]
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'application'
+
+mainClassName = 'hello.HelloWorld'
+
+// tag::repositories[]
+repositories {
+    mavenCentral()
+}
+// end::repositories[]
+
+// tag::jar[]
+jar {
+    baseName = 'gs-gradle'
+    version =  '0.1.0'
+}
+// end::jar[]
+
+// tag::dependencies[]
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    compile "joda-time:joda-time:2.2"
+    testCompile "junit:junit:4.12"
+}
+// end::dependencies[]
+
+// tag::wrapper[]
+// end::wrapper[]
 ----
 
 NOTE: There are many start/end comments embedded here. This makes it possible to extract bits of the build file into this guide for the detailed explanations above. You don't need
